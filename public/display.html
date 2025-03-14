@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Image Labels</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        .container {
+            position: relative;
+            display: inline-block;
+            width: 60vw;
+            max-width: 600px;
+            height: auto;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .label-box {
+            position: absolute;
+            border: 2px solid white;
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .label-box:hover {
+            border-color: peachpuff;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .label-box:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .upload-btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            color: white;
+            background: #6a11cb;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #8e44ad;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Image Analysis Result</h1>
+
+    <div class="container" id="imageContainer">
+        <img id="uploadedImage" src="" alt="Uploaded Image" />
+    </div>
+
+    <button class="upload-btn" onclick="uploadNewImage()">Upload New Image</button>
+
+    <script>
+        // Parse query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageUrl = urlParams.get('image');
+        const labelsWithBoxes = JSON.parse(decodeURIComponent(urlParams.get('data')) || '[]');
+
+        // Set image source
+        const imgElement = document.getElementById('uploadedImage');
+        imgElement.src = imageUrl;
+
+        const container = document.getElementById('imageContainer');
+
+        // Function to draw bounding boxes
+        function drawBoxes() {
+            // Clear previous boxes
+            document.querySelectorAll('.label-box').forEach(box => box.remove());
+
+            labelsWithBoxes.forEach(label => {
+                label.boxes.forEach(box => {
+                    const boxDiv = document.createElement('div');
+                    boxDiv.className = 'label-box';
+
+                    // Calculate position based on image size
+                    const scaleX = imgElement.clientWidth;
+                    const scaleY = imgElement.clientHeight;
+
+                    boxDiv.style.left = `${box.Left * scaleX}px`;
+                    boxDiv.style.top = `${box.Top * scaleY}px`;
+                    boxDiv.style.width = `${box.Width * scaleX}px`;
+                    boxDiv.style.height = `${box.Height * scaleY}px`;
+
+                    // Tooltip for label
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.innerText = `${label.name}`;
+
+                    boxDiv.appendChild(tooltip);
+                    container.appendChild(boxDiv);
+                });
+            });
+        }
+
+        // Draw boxes after image loads
+        imgElement.onload = drawBoxes;
+
+        // Adjust boxes if window is resized
+        window.addEventListener('resize', drawBoxes);
+
+        // Upload new image function
+        function uploadNewImage() {
+            window.location.href = '/'; // Redirect to upload page (customize the URL as needed)
+        }
+    </script>
+
+</body>
+
+</html>

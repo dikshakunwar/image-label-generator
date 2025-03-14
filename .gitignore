@@ -1,0 +1,6 @@
+node_modules/
+package-lock.json
+Capture.PNG
+Capture1.PNG
+.env
+uploads/
